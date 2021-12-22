@@ -77,6 +77,10 @@ Battery battery;
 
 void setup()
 {
+  // keep battery connected  
+  pinMode(pinBatterySwitch, OUTPUT);
+  digitalWrite(pinBatterySwitch, HIGH);
+
   Wire.begin();
   Serial.begin(SERIAL_BAUDRATE);
   //  pinMode(pinLED, OUTPUT);
