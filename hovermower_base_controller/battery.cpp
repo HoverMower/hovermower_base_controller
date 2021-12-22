@@ -1,0 +1,128 @@
+/*
+
+  Private-use only! (you need to ask for a commercial-use)
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  
+  Private-use only! (you need to ask for a commercial-use)
+*/
+
+#include "battery.h"
+#include <Arduino.h>
+#include "adcman.h"
+#include "config.h"
+
+Battery::Battery()
+{
+  // Initialize attributes
+  batVoltage = 0.0;
+  batSwitchOffIfBelow = 36.5;
+  batSwitchOffIfIdle = 60; // switch off battery if idle for minutes
+  //batFull = 42.0;              // battery reference Voltage (fully charged)
+  batFullCurrent = 0.2;        // current flowing when battery is fully charged
+  startChargingIfBelow = 40.0; // start charging if battery Voltage is below
+
+  batFactor = voltageDividerUges(150, 10, 1.0) * ADC2voltage(1) * 10; // ADC to battery voltage factor *10
+  chgFactor = voltageDividerUges(150, 10, 1.0) * ADC2voltage(1) * 10; // ADC to battery voltage factor *10;               // charge current conversion factor
+  charging = false;
+  inStation = false;
+  lastTimeChargeToggle = millis();
+}
+
+void Battery::run()
+{
+  check_battery_voltage();
+  check_charger();
+
+  // check for drawn battery
+  if (batVoltage <= batSwitchOffIfBelow)
+  {
+    digitalWrite(pinBatterySwitch, LOW);
+  }
+
+  // check if robot is in station
+  if (chgVoltage > 10)
+  {
+    inStation = true;
+  }
+
+  // need to start charging?
+  if (charging == false)
+  {
+    if (batVoltage < startChargingIfBelow && millis() - lastTimeChargeToggle > 30000)
+    {
+      charging = true;
+      digitalWrite(pinChargeEnable, HIGH);
+      lastTimeChargeToggle = millis();
+    }
+  }
+  // already charging, check if battery is full
+  else
+  {
+    if (chgCurrent <= batFullCurrent && millis() - lastTimeChargeToggle > 30000)
+    {
+      charging = false;
+      digitalWrite(pinChargeEnable, LOW);
+    }
+  }
+}
+
+void Battery::check_battery_voltage()
+{
+
+  // convert to double
+  int batADC = ADCMan.read(pinBatteryVoltage);
+  double batvolt = ((double)batADC) * batFactor;
+
+  // low-pass filter
+  double accel = 0.01;
+  //double accel = 1.0;
+  if (abs(batVoltage - batvolt) > 5)
+    batVoltage = batvolt;
+  else
+    batVoltage = (1.0 - accel) * batVoltage + accel * batvolt;
+}
+
+void Battery::check_charger()
+{
+  int currentADC = ADCMan.read(pinChargeCurrent);
+  int chgADC = ADCMan.read(pinChargeVoltage);
+
+  double chgvolt = ((double)chgADC) * batChgFactor;
+  double curramp = ((double)currentADC) * chgFactor;
+
+  // low-pass filter
+  double accel = 0.01;
+  //double accel = 1.0;
+  if (abs(chgVoltage - chgvolt) > 5)
+    chgVoltage = chgvolt;
+  else
+    chgVoltage = (1.0 - accel) * chgVoltage + accel * chgvolt;
+  if (abs(chgCurrent - curramp) > 0.5)
+    chgCurrent = curramp;
+  else
+    chgCurrent = (1.0 - accel) * chgCurrent + accel * curramp;
+}
+
+// Spannungsteiler Gesamtspannung ermitteln (Reihenschaltung R1-R2, U2 bekannt, U_GES zu ermitteln)
+float Battery::voltageDividerUges(float R1, float R2, float U2)
+{
+  return (U2 / R2 * (R1 + R2)); // Uges
+}
+
+// ADC-value to voltage
+float Battery::ADC2voltage(float ADCvalue)
+{
+  return (ADCvalue / 1023.0 * IOREF); // ADCman works @ 10 bit
+}

@@ -1,0 +1,6 @@
+{
+    "configuration": "cpu=atmega328",
+    "board": "arduino:avr:nano",
+    "programmer": "arduino:arduinoisp",
+    "sketch": "hovermower_base_controller\\hovermower_base_controller.ino"
+}
