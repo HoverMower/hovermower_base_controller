@@ -24,11 +24,7 @@
 
 #include <Arduino.h>
 
-#ifdef __AVR__
-  #define IOREF 5.0  // I/O reference voltage for Mega 2560
-#else 
-	#define IOREF 3.3   // I/O reference voltage for Due
-#endif
+
 
 class Battery
 {
@@ -47,17 +43,19 @@ public:
   bool inStation;                // robot in station?
   unsigned long chargingTimeout; // safety timer for charging
   void run();                    // run battery monitor once
+  void init();                   // init Battery class
 
 
 private:
   float batFactor;    // battery conversion factor
+ // float batCorrectionFactor; // correction factor due inacurate voltage divider. Use proper resistors and you don't need this
   float batChgFactor; // battery conversion factor
+ // float batChgCorrectionFactor; // correction factor due inacurate voltage divider. Use proper resistors and you don't need this  
   float chgFactor;    // charge current conversion factor
   unsigned long lastTimeChargeToggle; // 
 
   void check_battery_voltage();  // read current battery voltage
   void check_charger();          // read current and voltage of charge contacts
-  float ADC2voltage(float ADCvalue);
   float voltageDividerUges(float R1, float R2, float U2);
 };
 

@@ -50,10 +50,9 @@ uint8_t captureSize[CHANNELS]; // ADC sample buffer size (ADC0-ADC7)
 int16_t ofs[CHANNELS]; // ADC zero offset (ADC0-ADC7)
 int16_t ADCMin[CHANNELS]; // ADC min sample value (ADC-ADC7)
 int16_t ADCMax[CHANNELS]; // ADC max sample value (ADC-ADC7)
-int16_t ADCAvg[CHANNELS]; // ADC avg sample value (ADC-ADC7)
 volatile boolean captureComplete[CHANNELS]; // ADC buffer filled?
 boolean autoCalibrate[CHANNELS]; // do auto-calibrate? (ADC0-ADC7)
-int16_t *sample[CHANNELS];   // ADC one sample (ADC0-ADC7) - 10 bit unsigned    
+int16_t *sample[CHANNELS];   // ADC one sample (ADC0-ADC7) - 10 bit unsigned  
 ADCManager ADCMan;
 
 
@@ -102,7 +101,7 @@ void ADCManager::setCapture(byte pin, byte samplecount, boolean autoCalibrateOfs
   int ch = pin-A0;
   captureSize[ch] = samplecount;
   capture[ch] = new int8_t[samplecount];    
-  sample[ch]  = new int16_t[1];													
+  sample[ch]  = new int16_t[samplecount];										 
   autoCalibrate[ch] = autoCalibrateOfs;
 }
 
@@ -110,7 +109,7 @@ void ADCManager::calibrate(){
   Serial.println("ADC calibration...");
   for (int ch=0; ch < CHANNELS; ch++){        
     ADCMax[ch] = -9999;
-    ADCMin[ch] = 9999; 			  
+    ADCMin[ch] = 9999;  				   					  
     ofs[ch] = 0;    
     if (autoCalibrate[ch]){
       calibrateOfs(A0 + ch);
@@ -128,13 +127,14 @@ boolean ADCManager::calibrationDataAvail(){
 void ADCManager::calibrateOfs(byte pin){  
   int ch = pin-A0;
   ADCMax[ch] = -9999;
-  ADCMin[ch] = 9999;						  
+  ADCMin[ch] = 9999;					 
   ofs[ch]=0;    
   for (int i=0; i < 10; i++){
     captureComplete[ch]=false;      
     while (!isCaptureComplete(pin)) {
       delay(20);
-      run();    
+      run();  
+        
     } 
   }
   int16_t center = ADCMin[ch] + (ADCMax[ch] - ADCMin[ch]) / 2.0;
@@ -221,12 +221,17 @@ ISR(ADC_vect){
 
   if (!busy) return;
   if (position >= captureSize[channel]){    
+    // stop capture
+  //  captureComplete[channel]=true; 				     
     busy=false;
     return;
   } 
   value -= ofs[channel];                   
   capture[channel][position] =  min(SCHAR_MAX,  max(SCHAR_MIN, value / 4));   // convert to signed (zero = ADC/2)  
-  sample[channel][0] = value;										   
+  sample[channel][position] = value;           
+  // determine min/max 
+  if (value < ADCMin[channel]) ADCMin[channel]  = value;
+  if (value > ADCMax[channel]) ADCMax[channel]  = value; 											   		
   position++;      
 }
 
@@ -237,35 +242,21 @@ void ADCManager::stopCapture(){
   ADCSRA &= ~_BV(ADEN);
 
   position = 0;
-}
-
-void ADCManager::postProcess(){
-  ADCMax[channel] = -9999;
-  ADCMin[channel] = 9999;  
-  float avg = 0;
-  for (int i=0; i < captureSize[channel]; i++){
-    int8_t value = capture[channel][i];
-    ADCMax[channel] = max(ADCMax[channel], value);
-    ADCMin[channel] = min(ADCMin[channel], value);
-    avg += ((float)value) / ((float)captureSize[channel]);
-  }
-  ADCAvg[channel] = avg;
+  
 }
 
 
 void ADCManager::run(){
   if (busy) {
-    //Serial.print("busy pos=");
-    //Serial.println(position);
+    //Console.print("busy pos=");
+    //Console.println(position);
     return;
-  }  
+  }
   if (position != 0){
     // stop free running
-    stopCapture();    
-    // post-process capture
-    postProcess();
-    captureComplete[channel]=true;          
-    capturedChannels++;    
+    stopCapture();
+    capturedChannels++;
+    captureComplete[channel]=true; 
   }
   // find next channel for capturing
   for (int i=0; i < CHANNELS; i++){    
@@ -278,7 +269,6 @@ void ADCManager::run(){
     }      
   }
 }
-
 
 int8_t* ADCManager::getCapture(byte pin){  
   return (int8_t*)capture[pin-A0];
@@ -293,8 +283,9 @@ int ADCManager::read(byte pin){
   int ch = pin-A0;
   captureComplete[ch]=false;    
   if (captureSize[ch] == 0) return 0;  
-   else return sample[ch][0];
+    else return sample[ch][(captureSize[ch]-1)];
 }
+
 
 void ADCManager::restart(byte pin){
   captureComplete[pin-A0]=false;
@@ -311,7 +302,6 @@ int ADCManager::getCaptureSize(byte pin){
   return captureSize[ch];
 
 }
-
 
 int16_t ADCManager::getADCMin(byte pin){
   int ch = pin-A0;  

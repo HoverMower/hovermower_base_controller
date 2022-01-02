@@ -42,9 +42,15 @@
 
 
 Perimeter::Perimeter(){      
-  useDifferentialPerimeterSignal = true;
-  swapCoilPolarity[0] = SWAP_COIL_POLARITY_LEFT;
-  swapCoilPolarity[1] = SWAP_COIL_POLARITY_RIGHT;
+  // generate differential signal out of sender signal	
+  int8_t lastValue = sigcode[sizeof sigcode-1];
+  for (int i=0; i < sizeof sigcode; i++){
+    int8_t value = sigcode[i];
+    if (value == lastValue) sigcode[i] = 0;
+      else sigcode[i] = value;
+    lastValue = value;
+  }  
+	swapCoilPolarity = false;
   timedOutIfBelowSmag = 300;
   timeOutSecIfNotInside = 8;
   callCounter = 0;
@@ -72,12 +78,18 @@ void Perimeter::setPins(byte idx0Pin, byte idx1Pin){
  // ADCMan.setCapture(idx0Pin, adcSampleCount*2, true); 
  // ADCMan.setCapture(idx1Pin, adcSampleCount*2, true); 
   
-  Serial.print(F("matchSignal size="));
-  Serial.println(sizeof sigcode);  
-  Serial.print(F("subSample="));  
-  Serial.println((int)subSample);    
-  Serial.print(F("capture size="));
-  Serial.println(ADCMan.getCaptureSize(idx0Pin));  
+  Console.print(F("matchSignal size="));
+  Console.println(sizeof sigcode);  
+  Console.print(F("subSample="));  
+  Console.println((int)subSample);    
+  Console.print(F("capture size="));
+  Console.println(ADCMan.getCaptureSize(idx0Pin));  
+	// print signal	 
+  for (int i=0; i < sizeof sigcode; i++){
+    Console.print(sigcode[i]);
+    Console.print(F("\t"));
+  }
+  Console.println();
 }
 
 void Perimeter::speedTest(){
@@ -87,8 +99,8 @@ void Perimeter::speedTest(){
     matchedFilter(0);
     loops++;
   }
-  Serial.print(F("speedTest="));
-  Serial.println(loops);
+  Console.print(F("speedTest="));
+  Console.println(loops);
 }
 
 const int8_t* Perimeter::getRawSignalSample(byte idx) {
@@ -117,10 +129,10 @@ void Perimeter::printADCMinMax(int8_t *samples){
     vmax = max(vmax, samples[i]);
     vmin = min(vmin, samples[i]);
   }
-  Serial.print(F("perimter min,max="));
-  Serial.print((int)vmin);
-  Serial.print(F(","));
-  Serial.println((int)vmax);  
+  Console.print(F("perimter min,max="));
+  Console.print((int)vmin);
+  Console.print(F(","));
+  Console.println((int)vmax);  
 }
 
 // perimeter V2 uses a digital matched filter
@@ -142,11 +154,12 @@ void Perimeter::matchedFilter(byte idx){
     signalAvg[idx] = ((double)signalAvg[idx]) / ((double)(sampleCount));
   }
   // magnitude for tracking (fast but inaccurate)    
-  int16_t sigcode_size = sizeof sigcode;
+  int16_t sigcode_size = sizeof sigcode;  
   mag[idx] = corrFilter(sigcode, subSample, sigcode_size, samples, sampleCount-sigcode_size*subSample, filterQuality[idx]);
-  if (swapCoilPolarity[idx]) mag[idx] *= -1;        
+  if (swapCoilPolarity) mag[idx] *= -1;        
   // smoothed magnitude used for signal-off detection
   smoothMag[idx] = 0.99 * smoothMag[idx] + 0.01 * ((float)abs(mag[idx]));
+
   // perimeter inside/outside detection
   if (mag[idx] > 0){
     signalCounter[idx] = min(signalCounter[idx]+1, 3);    
@@ -250,3 +263,7 @@ int16_t Perimeter::corrFilter(int8_t *H, int8_t subsample, int16_t M, int8_t *ip
     return sumMin;
   }  
 }
+
+
+
+

@@ -52,6 +52,11 @@ How to use it (example):
 
 #include <Arduino.h>
 
+#ifdef __AVR__
+  #define IOREF 5.0  // I/O reference voltage for Mega 2560
+#else 
+  #define IOREF 3.3   // I/O reference voltage for Due
+#endif
 
 // sample rates
 enum {
@@ -87,7 +92,6 @@ class ADCManager
     int getCapturedChannels();
     int16_t getADCMin(byte pin);
     int16_t getADCMax(byte pin);    
-    int16_t getADCAvg(byte pin);    
     int16_t getADCOfs(byte pin);    
     // return number samples to capture
     int getCaptureSize(byte pin);
@@ -96,6 +100,7 @@ class ADCManager
     // get the manager running, starts sampling next pin
     void run();    
     uint8_t sampleRate;
+    float ADC2voltage(float ADCvalue);
   private:
     int capturedChannels;    
     void startADC(int sampleCount);
@@ -114,5 +119,3 @@ extern ADCManager ADCMan;
 
 
 #endif
-
-

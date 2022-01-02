@@ -1,7 +1,7 @@
 /*
 
   Private-use only! (you need to ask for a commercial-use)
- 
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -14,7 +14,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  
+
   Private-use only! (you need to ask for a commercial-use)
 */
 
@@ -25,6 +25,13 @@
 
 Battery::Battery()
 {
+
+  // initialize pins
+  pinMode(pinBatteryVoltage, INPUT);
+  pinMode(pinChargeCurrent, INPUT);
+  pinMode(pinChargeVoltage, INPUT);
+  pinMode(pinChargeEnable, OUTPUT);
+
   // Initialize attributes
   batVoltage = 0.0;
   batSwitchOffIfBelow = 36.5;
@@ -33,11 +40,21 @@ Battery::Battery()
   batFullCurrent = 0.2;        // current flowing when battery is fully charged
   startChargingIfBelow = 40.0; // start charging if battery Voltage is below
 
-  batFactor = voltageDividerUges(150, 10, 1.0) * ADC2voltage(1) * 10; // ADC to battery voltage factor *10
-  chgFactor = voltageDividerUges(150, 10, 1.0) * ADC2voltage(1) * 10; // ADC to battery voltage factor *10;               // charge current conversion factor
+  batFactor = voltageDividerUges(150, 10, 1.0) * ADCMan.ADC2voltage(1); // ADC to battery voltage factor 
+  chgFactor = voltageDividerUges(150, 10, 1.0) * ADCMan.ADC2voltage(1); // ADC to battery voltage factor ;               // charge current conversion factor
   charging = false;
   inStation = false;
   lastTimeChargeToggle = millis();
+
+ // batCorrectionFactor = 0.9207; // correction factor due inacurate voltage divider. Use proper resistors and you don't need this
+}
+
+void Battery::init()
+{
+  ADCMan.setCapture(pinChargeCurrent, 1, true);//Aktivierung des LadeStrom Pins beim ADC-Managers
+  ADCMan.setCapture(pinBatteryVoltage, 1, false);
+  ADCMan.setCapture(pinChargeVoltage, 1, false);
+
 }
 
 void Battery::run()
@@ -80,9 +97,9 @@ void Battery::run()
 
 void Battery::check_battery_voltage()
 {
-
   // convert to double
-  int batADC = ADCMan.read(pinBatteryVoltage);
+  int batADC =  ADCMan.read(pinBatteryVoltage);
+  Serial.println(batADC);
   double batvolt = ((double)batADC) * batFactor;
 
   // low-pass filter
@@ -92,6 +109,7 @@ void Battery::check_battery_voltage()
     batVoltage = batvolt;
   else
     batVoltage = (1.0 - accel) * batVoltage + accel * batvolt;
+
 }
 
 void Battery::check_charger()
@@ -119,10 +137,4 @@ void Battery::check_charger()
 float Battery::voltageDividerUges(float R1, float R2, float U2)
 {
   return (U2 / R2 * (R1 + R2)); // Uges
-}
-
-// ADC-value to voltage
-float Battery::ADC2voltage(float ADCvalue)
-{
-  return (ADCvalue / 1023.0 * IOREF); // ADCman works @ 10 bit
 }

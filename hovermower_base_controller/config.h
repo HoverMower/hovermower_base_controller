@@ -5,11 +5,16 @@
 /*------- Serial Interface -----*/
 #define SERIAL_BAUDRATE 115200
 #define SERIAL_RATE 50 // publish rate of messages in Hz
+#define SERIAL_READ_TIMEOUT 1000 // at least one CMD message per second should occur
 
 /*-------- DEBUG Section ----------*/
-#define DEBUG_OUTPUT false       // Activate this for tests to get human readable data, DISABLE when using as ROS Node
+#define DEBUG_OUTPUT true        // Activate this for tests to get human readable data, DISABLE when using as ROS Node
 
 /*------- Perimeter Definitions ------*/
+// ---- choose only one perimeter signal code ----
+#define SIGCODE_1  // Ardumower default perimeter signal
+//#define SIGCODE_2  // Ardumower alternative perimeter signal
+//#define SIGCODE_3  // Ardumower alternative perimeter signal
 #define pinPerimeterLeft A5        
 #define pinPerimeterRight A4        
 // #define pinLED 13               // Indicator if left is in/out
@@ -21,8 +26,9 @@
 #define pinButton 6
 
 /*----- user Switches -------*/
-#define pinSwitch1 2
-#define pinSwitch2 3
+#define pinSwitch1 3
+#define pinSwitch2 8
+#define pinSwitch3 A7
 
 /*----- Bumper -----------*/
 #define BUMPER true
@@ -41,10 +47,10 @@
 #define MOW true
 #define pinMowCurrent A6
 #define pinMowPWM 12
-#define pinDirection 11
-#define pinEnable 10
-#define pinBreak 9
-#define pinSpeed 8
-#define pinAlarm 7
+#define pinMowDirection 11
+#define pinMowEnable 10
+#define pinMowBreak 9
+#define pinMowSpeed 2
+#define pinMowAlarm 7
 
 #endif
