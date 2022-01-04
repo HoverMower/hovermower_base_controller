@@ -8,7 +8,7 @@
 #define SERIAL_READ_TIMEOUT 1000 // at least one CMD message per second should occur
 
 /*-------- DEBUG Section ----------*/
-#define DEBUG_OUTPUT true        // Activate this for tests to get human readable data, DISABLE when using as ROS Node
+#define DEBUG_OUTPUT false        // Activate this for tests to get human readable data, DISABLE when using as ROS Node
 
 /*------- Perimeter Definitions ------*/
 // ---- choose only one perimeter signal code ----
@@ -37,6 +37,10 @@
 
 /*----- BatteryMonitor -----------*/
 #define BATMON true
+#define BAT_SWITCH_OFF 30.5     // switch off if bat voltage below
+#define BAT_FULL_CURRENT 0.2    // current flowing into system, when battery is fully charged
+#define BAT_START_CHARGE 41.0   // start charging if battery voltage below
+
 #define pinBatterySwitch  13
 #define pinBatteryVoltage A3
 #define pinChargeCurrent A0

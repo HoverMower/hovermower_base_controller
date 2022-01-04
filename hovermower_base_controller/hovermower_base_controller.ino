@@ -78,6 +78,7 @@ Battery battery;
 
 // Mow Motor
 unsigned long nextTimeMowCheck;
+//unsigned long enableMowTime; debug only
 int mow_counter;
 Mow mow;
 
@@ -125,6 +126,7 @@ void setup()
   // mow interrupt handler
   mow_counter = 0;
   attachInterrupt(digitalPinToInterrupt(pinMowSpeed), interruptHandler, RISING);
+  mow.init();
 
   buttonCounter = 0;
   lastButtonCount = 0;
@@ -134,6 +136,8 @@ void setup()
   nextTimeBumper = millis() + 50;
   nextTimeBatteryCheck = millis() + 50;
   nextTimeMowCheck = millis() + 50;
+
+  // enableMowTime = millis() + 10000;  // debug only
   Serial.println("Setup complete");
 
     //if (DEBUG_OUTPUT) ADCMan.calibrate();
@@ -160,6 +164,20 @@ void loop()
     mow.run();
   }
 
+  // debug mow
+  /*if (millis() >= enableMowTime )
+  {
+    enableMowTime = millis() + 10000;
+    if (mow.speed > 0)
+    {
+      mow.setSpeed(0);
+    } 
+    else
+    {
+    mow.setSpeed(3000);
+    }
+  } */
+
   // Battery monitor
   if (BATMON && millis() >= nextTimeBatteryCheck)
   {
@@ -174,7 +192,7 @@ void loop()
     if (DEBUG_OUTPUT)
     {
      // printSerialPeri();
-      printSerialOthers();
+    //  printSerialOthers();
     }
     else
     {
@@ -202,7 +220,7 @@ void readSerial()
   // Check if timeout of serial commands occured. If so, stop mow motor for safety reasons
   if (millis() - last_time_command >= SERIAL_READ_TIMEOUT )
   {
-      if(MOW) mow.setSpeed(0);
+   //   if(MOW) mow.setSpeed(0);
   }
 }
 /*--------------------------------------------
@@ -211,7 +229,7 @@ void readSerial()
 void protocol_recv(unsigned char byte)
 {
   cmd_frame = ((uint16_t)(byte) << 8) | prev_byte;
-Serial.println(byte);
+
   // Read the start frame of cmd structure
   if (cmd_frame == CMD_FRAME && msg_len == 0)
   {
@@ -236,6 +254,8 @@ Serial.println(byte);
 
 Serial.print("Checksum: ");
 Serial.println(checksum);
+Serial.println(cmd_msg.cmd);
+Serial.println(cmd_msg.value);
     //if (cmd_msg.start == CMD_FRAME && cmd_msg.checksum == checksum)
     if (cmd_msg.start == CMD_FRAME)
     {
@@ -412,7 +432,10 @@ void printSerialOthers()
   Serial.print("Charging ");
   Serial.print(battery.charging);
   Serial.print("\t");
-  Serial.print("MowCnt ");
+  Serial.print("MowTgtSpd ");
+  Serial.print(mow.target_speed);
+  Serial.print("\t");
+  Serial.print("MowSpd ");
   Serial.print(mow.speed);
   Serial.print("\t");
   Serial.print("MowA ");

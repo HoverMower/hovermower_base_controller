@@ -36,6 +36,7 @@ public:
   int16_t speed;                 // actual speed in RPM
   int16_t target_speed;          // target speed of mow motor
   bool alarm;                    // alarm occured
+  void init();                   // init ADC manager for Mow
   void run();                    // run mow monitor once
   void setSpeed(int speed);  // set desired speed (RPM)
   void set_count_of_ISR(int count);     // set count of ticks which has been detected by ISR for further processing
@@ -48,8 +49,7 @@ private:
   int16_t VpA = 100;        // milli Volt per Ampere (185 for 5A module, 100 for 20A module, 66 for 30A module)
   int16_t MowCount;         // counter of ISR routine
   void check_current(); // measure current of mow motor
-  void check_alarm();  // checks if alarm occured
-  
+  void check_alarm();  // checks if alarm occured  
 };
 
 #endif

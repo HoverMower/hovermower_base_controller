@@ -3,5 +3,5 @@
     "board": "arduino:avr:nano",
     "programmer": "arduino:arduinoisp",
     "sketch": "hovermower_base_controller\\hovermower_base_controller.ino",
-    "port": "COM12"
+    "port": "COM4"
 }

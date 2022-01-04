@@ -45,7 +45,10 @@ Mow::Mow()
   direction = 0;
   enable = 0;
   brake = 0;
+}
 
+void Mow::init()
+{
   ADCMan.setCapture(pinMowCurrent, 1, true);
 }
 
@@ -53,18 +56,42 @@ void Mow::run()
 {
   check_current();
   check_alarm();
+  if (alarm == true)
+  {
+   // target_speed = 0; 
+  }
 }
 
-void Mow::setSpeed(int speed)
+void Mow::setSpeed(int new_speed)
 {
-  target_speed = speed;
+  int pwm = 0;
+  Serial.println(new_speed);
+  if (new_speed == 0)
+  {
+     Serial.println(direction);
+    direction = !direction;
+     Serial.println(direction);
+    enable = false;
+    brake = true;
+  }
+  else 
+  {
+    enable = true;
+    brake = false;
+  }
+  
+  target_speed = new_speed;
+  pwm = map(target_speed, 1, 3500, 1, 255);
+  digitalWrite(pinMowDirection, direction);
+ 
+  analogWrite(pinMowPWM, pwm);
 }
 
 void Mow::check_current()
 {
   int currentADC = ADCMan.read(pinMowCurrent);       // read raw value
   double sensor_volt = (currentADC / 1024.0) * 5000; // get sensor output voltage
-  MowCurrent = ((sensor_volt - zero_point) / VpA);   // calculate Ampere
+  MowCurrent = abs((sensor_volt - zero_point) / VpA);   // calculate Ampere
 }
 
 void Mow::check_alarm()
@@ -74,5 +101,12 @@ void Mow::check_alarm()
 
 void Mow::set_count_of_ISR(int count)
 {
+
   MowCount = count;
+
+  // F = N*P/60; F = frequency, P num of poles
+  // N = 60 * f / P
+  //speed = count * (delta_t/1000);  // U/min
+  speed = 60 * count;
+  
 }

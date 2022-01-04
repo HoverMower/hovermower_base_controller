@@ -34,19 +34,19 @@ Battery::Battery()
 
   // Initialize attributes
   batVoltage = 0.0;
-  batSwitchOffIfBelow = 36.5;
+  batSwitchOffIfBelow = BAT_SWITCH_OFF;
   batSwitchOffIfIdle = 60; // switch off battery if idle for minutes
   //batFull = 42.0;              // battery reference Voltage (fully charged)
-  batFullCurrent = 0.2;        // current flowing when battery is fully charged
-  startChargingIfBelow = 40.0; // start charging if battery Voltage is below
+  batFullCurrent = BAT_FULL_CURRENT;        // current flowing when battery is fully charged
+  startChargingIfBelow = BAT_START_CHARGE; // start charging if battery Voltage is below
 
-  batFactor = voltageDividerUges(150, 10, 1.0) * ADCMan.ADC2voltage(1); // ADC to battery voltage factor 
-  chgFactor = voltageDividerUges(150, 10, 1.0) * ADCMan.ADC2voltage(1); // ADC to battery voltage factor ;               // charge current conversion factor
+  batFactor = voltageDividerUges(150, 10, 1.0) * ADCMan.ADC2voltage(1); // ADC to battery voltage factor
+  batChgFactor = voltageDividerUges(150, 10, 1.0) * ADCMan.ADC2voltage(1); // ADC to battery voltage factor ;               // charge current conversion factor
+  chgFactor                  = ADCMan.ADC2voltage(1);
   charging = false;
   inStation = false;
   lastTimeChargeToggle = millis();
 
- // batCorrectionFactor = 0.9207; // correction factor due inacurate voltage divider. Use proper resistors and you don't need this
 }
 
 void Battery::init()
@@ -72,6 +72,11 @@ void Battery::run()
   if (chgVoltage > 10)
   {
     inStation = true;
+  } 
+  else
+  { 
+    inStation = false;
+    charging = false;
   }
 
   // need to start charging?
@@ -99,7 +104,6 @@ void Battery::check_battery_voltage()
 {
   // convert to double
   int batADC =  ADCMan.read(pinBatteryVoltage);
-  Serial.println(batADC);
   double batvolt = ((double)batADC) * batFactor;
 
   // low-pass filter
