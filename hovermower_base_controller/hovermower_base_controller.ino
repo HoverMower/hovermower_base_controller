@@ -365,8 +365,8 @@ void sendMessage()
   feedback.mowAlarm = mow.alarm;
 
   feedback.checksum = (uint16_t)(feedback.start ^ feedback.left_mag ^ feedback.right_mag ^ feedback.left_smag ^ feedback.right_smag ^ feedback.left_inside ^ feedback.right_inside ^
-                                 feedback.left_timeout ^ feedback.right_timeout ^ feedback.calibrated ^ feedback.bumperLeft ^ feedback.bumperRight ^ feedback.buttonCount ^
-                                 feedback.batVoltage ^ feedback.chgVoltage ^ feedback.chgCurrent ^ feedback.chgStatus ^
+                                 feedback.left_timeout ^ feedback.right_timeout ^ feedback.calibrated ^ feedback.bumperLeft ^ feedback.bumperRight ^ feedback.buttonCount
+                                 ^ feedback.batVoltage ^ feedback.chgVoltage ^ feedback.chgCurrent ^ feedback.chgStatus ^
                                  feedback.mowCurrent ^ feedback.mowPower ^ feedback.mowSpeed ^ feedback.mowAlarm);
 
   Serial.write((uint8_t *)&feedback, sizeof(feedback));
