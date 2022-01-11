@@ -50,6 +50,8 @@ private:
   int16_t MowCount;         // counter of ISR routine
   void check_current(); // measure current of mow motor
   void check_alarm();  // checks if alarm occured  
+  void setEnable(bool status); // enable/disable driver
+  void setBrake(bool status); // enable/disable brake
 };
 
 #endif

@@ -33,7 +33,7 @@
 /*----- Bumper -----------*/
 #define BUMPER true
 #define pinBumperLeft  4
-#define pinBumperRight 5
+#define pinBumperRight 12
 
 /*----- BatteryMonitor -----------*/
 #define BATMON true
@@ -50,11 +50,12 @@
 /*------ Mow Motor --------- */
 #define MOW true
 #define pinMowCurrent A6
-#define pinMowPWM 12
+#define pinMowPWM 5
 #define pinMowDirection 11
 #define pinMowEnable 10
-#define pinMowBreak 9
+#define pinMowBrake 9
 #define pinMowSpeed 2
 #define pinMowAlarm 7
+#define MAX_MOW_RPM 4000
 
 #endif

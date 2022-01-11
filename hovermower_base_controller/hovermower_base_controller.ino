@@ -83,10 +83,10 @@ int mow_counter;
 Mow mow;
 
 // ISR routine for Mow motor, counting ticks of motor
-void interruptHandler()
-{
-  mow_counter++;
-}
+//void interruptHandler()
+//{
+//  mow_counter++;
+//}
 
 /*--------------------------------------------
   Setup Arduino
@@ -125,7 +125,7 @@ void setup()
 
   // mow interrupt handler
   mow_counter = 0;
-  attachInterrupt(digitalPinToInterrupt(pinMowSpeed), interruptHandler, RISING);
+  //attachInterrupt(digitalPinToInterrupt(pinMowSpeed), interruptHandler, RISING);
   mow.init();
 
   buttonCounter = 0;
@@ -159,24 +159,10 @@ void loop()
   if (MOW && millis() >= nextTimeMowCheck)
   {
     nextTimeMowCheck = millis() + 100;
-    mow.set_count_of_ISR(mow_counter);
+    //mow.set_count_of_ISR(mow_counter);
     mow_counter = 0;
     mow.run();
   }
-
-  // debug mow
-  /*if (millis() >= enableMowTime )
-  {
-    enableMowTime = millis() + 10000;
-    if (mow.speed > 0)
-    {
-      mow.setSpeed(0);
-    } 
-    else
-    {
-    mow.setSpeed(3000);
-    }
-  } */
 
   // Battery monitor
   if (BATMON && millis() >= nextTimeBatteryCheck)
@@ -220,7 +206,7 @@ void readSerial()
   // Check if timeout of serial commands occured. If so, stop mow motor for safety reasons
   if (millis() - last_time_command >= SERIAL_READ_TIMEOUT )
   {
-   //   if(MOW) mow.setSpeed(0);
+      if(MOW) mow.setSpeed(0);
   }
 }
 /*--------------------------------------------
@@ -248,42 +234,28 @@ void protocol_recv(unsigned char byte)
   if (msg_len == sizeof(SerialCommand))
   {
 
-    uint16_t checksum = (uint16_t)(cmd_msg.start ^
-                                   cmd_msg.cmd ^
-                                   cmd_msg.value);
+    uint16_t checksum = (uint16_t)(cmd_msg.start ^ cmd_msg.mow_rpm ^ 
+                                  cmd_msg.switch1 ^ cmd_msg.switch2 ^ cmd_msg.switch3 ^ cmd_msg.calibrate);
 
-Serial.print("Checksum: ");
-Serial.println(checksum);
-Serial.println(cmd_msg.cmd);
-Serial.println(cmd_msg.value);
-    //if (cmd_msg.start == CMD_FRAME && cmd_msg.checksum == checksum)
-    if (cmd_msg.start == CMD_FRAME)
+
+    if (cmd_msg.start == CMD_FRAME && cmd_msg.checksum == checksum)
     {
-      Serial.println("checksum ok");
+      
       // valid command
       last_time_command = millis();
-
-      // process command
-      switch (cmd_msg.cmd)
+      if (cmd_msg.calibrate == true)
       {
-      case CMD_CALIBRATE:
         ADCMan.calibrate();
-        break;
-      case CMD_SETMOTOR:
-        if(MOW) mow.setSpeed(int(cmd_msg.value));
-        break;
-
-      case CMD_SWITCH1:
-        digitalWrite(pinSwitch1, bool(cmd_msg.value));
-        break;
-      case CMD_SWITCH2:
-        digitalWrite(pinSwitch2, bool(cmd_msg.value));
-        break;
+        digitalWrite(pinBatterySwitch, LOW);
       }
+      if(MOW) mow.setSpeed(int(cmd_msg.mow_rpm));
+      switch1 = cmd_msg.switch1;
+      switch2 = cmd_msg.switch2;
+      switch3 = cmd_msg.switch3;
+      DoCalibrate = cmd_msg.calibrate;
     }
     else
     {
-      Serial.println("checksum error");
       // implement error handler here
     }
     msg_len = 0;
@@ -361,13 +333,17 @@ void sendMessage()
     feedback.chgStatus = (byte)IN_STAITON;
   feedback.mowCurrent = (int16_t)(mow.MowCurrent * 100);
   feedback.mowPower = (int16_t)(mow.MowPower * 100);
-  feedback.mowSpeed = (int16_t)mow.speed;
+  feedback.mowSpeed = (int16_t)mow.target_speed;
   feedback.mowAlarm = mow.alarm;
+  feedback.switch1 = switch1;
+  feedback.switch2 = switch2;
+  feedback.switch3 = switch3;
+  feedback.calibrate = DoCalibrate;
 
   feedback.checksum = (uint16_t)(feedback.start ^ feedback.left_mag ^ feedback.right_mag ^ feedback.left_smag ^ feedback.right_smag ^ feedback.left_inside ^ feedback.right_inside ^
                                  feedback.left_timeout ^ feedback.right_timeout ^ feedback.calibrated ^ feedback.bumperLeft ^ feedback.bumperRight ^ feedback.buttonCount
                                  ^ feedback.batVoltage ^ feedback.chgVoltage ^ feedback.chgCurrent ^ feedback.chgStatus ^
-                                 feedback.mowCurrent ^ feedback.mowPower ^ feedback.mowSpeed ^ feedback.mowAlarm);
+                                 feedback.mowCurrent ^ feedback.mowPower ^ feedback.mowSpeed ^ feedback.mowAlarm ^feedback.switch1 ^ feedback.switch2 ^ feedback.switch3 ^ feedback.calibrate);
 
   Serial.write((uint8_t *)&feedback, sizeof(feedback));
 }
