@@ -69,8 +69,8 @@ void Mow::setSpeed(int new_speed)
   if (new_speed <= 0 || new_speed > MAX_MOW_RPM)
   {
     new_speed = 0;
-    direction = !direction;
-    Serial.println(direction);
+    // change direction only, if actual speed != 0
+    if (target_speed != 0) direction = !direction;
     setEnable(false);
     setBrake(true);
   }

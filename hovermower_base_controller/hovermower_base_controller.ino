@@ -177,8 +177,8 @@ void loop()
     nextTime = millis() + 1000 / SERIAL_RATE;
     if (DEBUG_OUTPUT)
     {
-     // printSerialPeri();
-    //  printSerialOthers();
+      printSerialPeri();
+      printSerialOthers();
     }
     else
     {
