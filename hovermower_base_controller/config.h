@@ -16,19 +16,19 @@
 //#define SIGCODE_2  // Ardumower alternative perimeter signal
 //#define SIGCODE_3  // Ardumower alternative perimeter signal
 #define pinPerimeterLeft A5        
-#define pinPerimeterRight A4        
+#define pinPerimeterRight A7        
 // #define pinLED 13               // Indicator if left is in/out
 #define SWAP_COIL_POLARITY_LEFT false;
 #define SWAP_COIL_POLARITY_RIGHT true;
 
 /*----- user Button ---------*/
 #define BUTTON true
-#define pinButton 6
+#define pinButton 8
 
 /*----- user Switches -------*/
 #define pinSwitch1 3
-#define pinSwitch2 8
-#define pinSwitch3 A7
+#define pinSwitch2 6
+#define pinSwitch3 10
 
 /*----- Bumper -----------*/
 #define BUMPER true
@@ -52,10 +52,10 @@
 #define pinMowCurrent A6
 #define pinMowPWM 5
 #define pinMowDirection 11
-#define pinMowEnable 10
+#define pinMowEnable 7
 #define pinMowBrake 9
 #define pinMowSpeed 2
-#define pinMowAlarm 7
+#define pinMowAlarm A4
 #define MAX_MOW_RPM 4000
 
 #endif

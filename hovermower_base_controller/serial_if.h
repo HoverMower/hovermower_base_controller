@@ -14,8 +14,5 @@ uint16_t cmd_frame = 0;
 unsigned char *p;
 unsigned long last_time_command = 0;
 
-uint8_t switch1; // value of switch 1
-uint8_t switch2; // value of switch 1
-uint8_t switch3; // value of switch 1
 bool DoCalibrate; // start calibration
 #endif

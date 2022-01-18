@@ -54,6 +54,7 @@ THIS SOFTWARE IS BASED ON ARDUMOWER AZURIT, www.ardumower.de
 #include "serial_if.h"
 #include "battery.h"
 #include "mow.h"
+#include "switch.h"
 
 Perimeter perimeter;
 unsigned long nextTime = 0;
@@ -81,6 +82,10 @@ unsigned long nextTimeMowCheck;
 //unsigned long enableMowTime; debug only
 int mow_counter;
 Mow mow;
+
+// Switches
+Switch Switch;
+unsigned long nextTimeSwitchCheck;
 
 // ISR routine for Mow motor, counting ticks of motor
 //void interruptHandler()
@@ -128,6 +133,9 @@ void setup()
   //attachInterrupt(digitalPinToInterrupt(pinMowSpeed), interruptHandler, RISING);
   mow.init();
 
+  // User switches
+  nextTimeSwitchCheck = millis() + 50;
+
   buttonCounter = 0;
   lastButtonCount = 0;
   bumperLeft = false;
@@ -171,6 +179,13 @@ void loop()
     battery.run();
   }
 
+  // Switches
+  if (millis() > nextTimeSwitchCheck)
+  {
+    nextTimeSwitchCheck = millis() + 50;
+    Switch.run();
+  }
+  
   /* Set info to ROS */
   if (millis() >= nextTime)
   {
@@ -249,9 +264,9 @@ void protocol_recv(unsigned char byte)
         digitalWrite(pinBatterySwitch, LOW);
       }
       if(MOW) mow.setSpeed(int(cmd_msg.mow_rpm));
-      switch1 = cmd_msg.switch1;
-      switch2 = cmd_msg.switch2;
-      switch3 = cmd_msg.switch3;
+      Switch.setSwitch(SWITCH1_ID, cmd_msg.switch1);
+      Switch.setSwitch(SWITCH2_ID, cmd_msg.switch2);
+      Switch.setSwitch(SWITCH3_ID, cmd_msg.switch3);
       DoCalibrate = cmd_msg.calibrate;
     }
     else
@@ -335,9 +350,9 @@ void sendMessage()
   feedback.mowPower = (int16_t)(mow.MowPower * 100);
   feedback.mowSpeed = (int16_t)mow.target_speed;
   feedback.mowAlarm = mow.alarm;
-  feedback.switch1 = switch1;
-  feedback.switch2 = switch2;
-  feedback.switch3 = switch3;
+  feedback.switch1 = Switch.switch1;
+  feedback.switch2 = Switch.switch2;
+  feedback.switch3 = Switch.switch3;
   feedback.calibrate = DoCalibrate;
 
   feedback.checksum = (uint16_t)(feedback.start ^ feedback.left_mag ^ feedback.right_mag ^ feedback.left_smag ^ feedback.right_smag ^ feedback.left_inside ^ feedback.right_inside ^

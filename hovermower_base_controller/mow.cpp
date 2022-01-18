@@ -59,7 +59,7 @@ void Mow::run()
   check_alarm();
   if (alarm == true)
   {
-    // target_speed = 0;
+    //target_speed = 0;
   }
 }
 
@@ -96,7 +96,7 @@ void Mow::check_current()
 
 void Mow::check_alarm()
 {
-  alarm = digitalRead(pinMowAlarm);
+  alarm = !digitalRead(pinMowAlarm);
 }
 
 void Mow::set_count_of_ISR(int count)
@@ -116,11 +116,12 @@ void Mow::set_count_of_ISR(int count)
 void Mow::setEnable(bool status)
 {
   enable = status;
-  digitalWrite(pinMowEnable, enable);
+  digitalWrite(pinMowEnable, !enable); // pin EN low = run, EN high = stop
+
 }
 
 void Mow::setBrake(bool status)
 {
   brake = status;
-  digitalWrite(pinMowBrake, brake);
+  digitalWrite(pinMowBrake, brake); // pin Brake low = run, Brake high = stop
 }
