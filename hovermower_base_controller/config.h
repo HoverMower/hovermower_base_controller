@@ -12,14 +12,17 @@
 
 /*------- Perimeter Definitions ------*/
 // ---- choose only one perimeter signal code ----
-#define SIGCODE_1  // Ardumower default perimeter signal
+//#define SIGCODE_1  // Ardumower default perimeter signal
 //#define SIGCODE_2  // Ardumower alternative perimeter signal
 //#define SIGCODE_3  // Ardumower alternative perimeter signal
+#define SIGCODE_4  // differential signal
 #define pinPerimeterLeft A5        
 #define pinPerimeterRight A7        
 // #define pinLED 13               // Indicator if left is in/out
-#define SWAP_COIL_POLARITY_LEFT false;
+#define SWAP_COIL_POLARITY_LEFT true; 
 #define SWAP_COIL_POLARITY_RIGHT true;
+#define PERI_TIMEOUT_SMAG 300;    // Perimeter timeout if smag below this value (poor signal)
+#define PERI_TIMEOUT_NOT_INSIDE 8; // Perimeter timeout if coil is not inside for x seconds
 
 /*----- user Button ---------*/
 #define BUTTON true

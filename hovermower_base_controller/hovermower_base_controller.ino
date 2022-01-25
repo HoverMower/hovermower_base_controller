@@ -193,7 +193,7 @@ void loop()
     if (DEBUG_OUTPUT)
     {
       printSerialPeri();
-      printSerialOthers();
+     // printSerialOthers();
     }
     else
     {
@@ -384,10 +384,10 @@ void printSerialPeri()
   Serial.print(",");
   Serial.print((int)perimeter.isInside(1));
   Serial.print("\t");
-  Serial.print("on ");
-  Serial.print((int)(!perimeter.signalTimedOut(0)));
+  Serial.print("TOut ");
+  Serial.print((int)(perimeter.signalTimedOut(0)));
   Serial.print(",");
-  Serial.print((int)(!perimeter.signalTimedOut(1)));
+  Serial.print((int)(perimeter.signalTimedOut(1)));
   Serial.print("\t");
   Serial.print("adc ");
   Serial.print((int)(ADCMan.getCapturedChannels()));

@@ -90,6 +90,7 @@ class ADCManager
     boolean isCaptureComplete(byte pin);
     // statistics only
     int getCapturedChannels();
+    int16_t getADCAvg(byte pin); 
     int16_t getADCMin(byte pin);
     int16_t getADCMax(byte pin);    
     int16_t getADCOfs(byte pin);    

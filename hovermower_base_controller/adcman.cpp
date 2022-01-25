@@ -312,6 +312,11 @@ int ADCManager::getCaptureSize(byte pin){
 
 }
 
+int16_t ADCManager::getADCAvg(byte pin){
+  int ch = pin-A0;  
+  if (ch >= CHANNELS) return 0;
+  return ADCAvg[ch];
+}
 
 int16_t ADCManager::getADCMin(byte pin){
   int ch = pin-A0;  

@@ -38,6 +38,8 @@
   int8_t sigcode[] = { 1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1,-1, 1,-1 };
 #elif defined (SIGCODE_3)   
   int8_t sigcode[] = { 1, 1,-1,-1, 1,-1, 1, 1,-1, 1, 1,-1,-1, 1, 1,-1, 1,-1,-1, 1,-1,-1, 1,-1 };
+#elif defined (SIGCODE_4)   
+  int8_t sigcode[] = { 1,0,-1, 0,1,-1,1,-1, 0,1,-1,1,0,-1, 0,1,-1, 0,1,-1, 0,1,0,-1 };
 #endif
 
 
@@ -45,8 +47,8 @@ Perimeter::Perimeter(){
   useDifferentialPerimeterSignal = true;
   swapCoilPolarity[0] = SWAP_COIL_POLARITY_LEFT;
   swapCoilPolarity[1] = SWAP_COIL_POLARITY_RIGHT;
-  timedOutIfBelowSmag = 300;
-  timeOutSecIfNotInside = 8;
+  timedOutIfBelowSmag = PERI_TIMEOUT_SMAG;
+  timeOutSecIfNotInside = PERI_TIMEOUT_NOT_INSIDE;
   callCounter = 0;
   mag[0] = mag[1] = 0;
   smoothMag[0] = smoothMag[1] = 0;
@@ -161,9 +163,6 @@ void Perimeter::matchedFilter(byte idx){
   if (idx == 0) callCounter++;
 }
 
-int16_t Perimeter::getSignalMin(byte idx){
-  return signalMin[idx];
-}
 
 int16_t Perimeter::getSignalMax(byte idx){
   return signalMax[idx];
@@ -177,6 +176,11 @@ int16_t Perimeter::getSignalAvg(byte idx){
 float Perimeter::getFilterQuality(byte idx){
   return filterQuality[idx];
 }
+
+int16_t Perimeter::getSignalMin(byte idx){
+  return signalMin[idx];
+}
+
 
 boolean Perimeter::isInside(byte idx){
   if (abs(mag[idx]) > 1000) {
