@@ -104,8 +104,6 @@ void setup()
 
   Wire.begin();
   Serial.begin(SERIAL_BAUDRATE);
-  //  pinMode(pinLED, OUTPUT);
-
   Serial.println("START");
 
   ADCMan.init();
@@ -261,7 +259,6 @@ void protocol_recv(unsigned char byte)
       if (cmd_msg.calibrate == true)
       {
         ADCMan.calibrate();
-        digitalWrite(pinBatterySwitch, LOW);
       }
       if(MOW) mow.setSpeed(int(cmd_msg.mow_rpm));
       Switch.setSwitch(SWITCH1_ID, cmd_msg.switch1);

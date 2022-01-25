@@ -231,9 +231,7 @@ ISR(ADC_vect){
 }
 
 void ADCManager::stopCapture(){  
-  //Serial.print("stopping capture ch");
-  //Serial.println(channel);    
- 
+
   ADCSRA &= ~_BV(ADEN);
 
   position = 0;
@@ -255,8 +253,6 @@ void ADCManager::postProcess(){
 
 void ADCManager::run(){
   if (busy) {
-    //Serial.print("busy pos=");
-    //Serial.println(position);
     return;
   }  
   if (position != 0){

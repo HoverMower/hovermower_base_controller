@@ -8,7 +8,7 @@
 #define SERIAL_READ_TIMEOUT 1000 // at least one CMD message per second should occur
 
 /*-------- DEBUG Section ----------*/
-#define DEBUG_OUTPUT false        // Activate this for tests to get human readable data, DISABLE when using as ROS Node
+#define DEBUG_OUTPUT true        // Activate this for tests to get human readable data, DISABLE when using as ROS Node
 
 /*------- Perimeter Definitions ------*/
 // ---- choose only one perimeter signal code ----
@@ -18,7 +18,6 @@
 #define SIGCODE_4  // differential signal
 #define pinPerimeterLeft A5        
 #define pinPerimeterRight A7        
-// #define pinLED 13               // Indicator if left is in/out
 #define SWAP_COIL_POLARITY_LEFT true; 
 #define SWAP_COIL_POLARITY_RIGHT true;
 #define PERI_TIMEOUT_SMAG 300;    // Perimeter timeout if smag below this value (poor signal)

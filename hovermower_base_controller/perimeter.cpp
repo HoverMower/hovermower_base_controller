@@ -29,9 +29,6 @@
 #include "drivers.h"
 #include "config.h"
 
-//#define pinLED 13                  
-
-  
 #if defined (SIGCODE_1)	
   int8_t sigcode[] = { 1, 1,-1,-1, 1,-1, 1,-1,-1,1, -1, 1, 1,-1,-1, 1,-1,-1, 1,-1,-1, 1, 1,-1 };
 #elif defined (SIGCODE_2)   
